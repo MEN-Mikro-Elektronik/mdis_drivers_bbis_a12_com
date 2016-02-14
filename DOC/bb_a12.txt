@@ -130,7 +130,7 @@ Description:
     - deinitializes the bbis handle
 
 Input:
-    hP   pointer to board handle structure
+     hP   pointer to board handle structure
 
 Output:
     *hP  NULL

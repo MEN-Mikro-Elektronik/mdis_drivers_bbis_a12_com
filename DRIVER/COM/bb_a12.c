@@ -11,14 +11,14 @@
  *
  *               The A12 supports several onboard-devices:
  *
- *				 device  
+ *				 device
  *               -----------------------------------------------------------
- *               0x0	 M-Module 0	
+ *               0x0	 M-Module 0
  *               0x1	 M-Module 1
- *               0x2	 M-Module 2	
+ *               0x2	 M-Module 2
  *				 0x1000	 QSPI
  *
- *     			 The onboard PC-MIP and PMC slots are handled by the 
+ *     			 The onboard PC-MIP and PMC slots are handled by the
  *				 generic PCI BBIS
  *
  *     Note: do not compile this handler with MAC_BYTESWAP!
@@ -68,7 +68,7 @@ static const char RCSid[]="$Id: bb_a12.c,v 1.6 2006/12/20 12:23:57 ufranke Exp $
 #include <MEN/mdis_api.h>   /* MDIS global defs               */
 #include <MEN/maccess.h>
 
-#include "a12_int.h"		/* A12 specific defines */ 
+#include "a12_int.h"		/* A12 specific defines */
 
 /*-----------------------------------------+
 |  DEFINES                                 |
@@ -93,7 +93,7 @@ typedef struct {
 	int32   irqLevel;
 	int32   irqMode;
 } A12_SLOT_CFG;
-	
+
 /*-----------------------------------------+
 |  GLOBALS                                 |
 +-----------------------------------------*/
@@ -205,7 +205,7 @@ static int32 Cleanup(BBIS_HANDLE *h, int32 retCode);
  *                - initializes the board handle
  *                - reads and saves board descriptor entries
  *                - check for M-module FPGA
- *				  - Locate memory base 
+ *				  - Locate memory base
  *				  - Assign resources to board handler
  *				  - Map used resources
  *
@@ -216,10 +216,10 @@ static int32 Cleanup(BBIS_HANDLE *h, int32 retCode);
  *                DEBUG_LEVEL_DESC         OSS_DBG_DEFAULT  see dbg.h
  *                DEBUG_LEVEL              OSS_DBG_DEFAULT  see dbg.h
  *---------------------------------------------------------------------------
- *  Input......:  osHdl     pointer to os specific structure             
- *                descSpec  pointer to os specific descriptor specifier  
- *                hP   pointer to not initialized board handle structure            
- *  Output.....:  *hP  initialized board handle structure  
+ *  Input......:  osHdl     pointer to os specific structure
+ *                descSpec  pointer to os specific descriptor specifier
+ *                hP   pointer to not initialized board handle structure
+ *  Output.....:  *hP  initialized board handle structure
  *				  return    0 | error code
  *  Globals....:  ---
  ****************************************************************************/
@@ -283,7 +283,7 @@ static int32 A12_Init(
 	DESC_DbgLevelSet(h->descHdl, value);
 
     /* get DEBUG_LEVEL */
-    error = DESC_GetUInt32( h->descHdl, OSS_DBG_DEFAULT, 
+    error = DESC_GetUInt32( h->descHdl, OSS_DBG_DEFAULT,
 							 &(h->debugLevel),
                 "DEBUG_LEVEL");
     if ( error && (error!=ERR_DESC_KEY_NOTFOUND) )
@@ -298,7 +298,7 @@ static int32 A12_Init(
 	error = OSS_PciGetConfig( h->osHdl, 0, A12_MMOD_BRIDGE_DEV_NO, 0,
 							  OSS_PCI_DEVICE_ID, &devId );
 	if( error ){
-		DBGWRT_ERR((DBH, "*** %s_BrdInit: Can't read PCI ven/dev Id\n", 
+		DBGWRT_ERR((DBH, "*** %s_BrdInit: Can't read PCI ven/dev Id\n",
 					BBNAME ));
 		return( Cleanup(h,error) );
 	}
@@ -309,7 +309,7 @@ static int32 A12_Init(
 		return( Cleanup(h,ERR_BBIS_ILL_ID));
 	}
 
-	if( (venId != A12_MMOD_BRIDGE_VEN_ID) || 
+	if( (venId != A12_MMOD_BRIDGE_VEN_ID) ||
 		(devId != A12_MMOD_BRIDGE_DEV_ID )){
 		DBGWRT_ERR((DBH, "*** %s_BrdInit: bad vendor/device ID of "
 					"PCI->M-mod bridge %04lx %04lx\n", BBNAME, venId, devId));
@@ -322,7 +322,7 @@ static int32 A12_Init(
 	error = OSS_BusToPhysAddr( h->osHdl, OSS_BUSTYPE_PCI, &h->physBase,
 							   0, A12_MMOD_BRIDGE_DEV_NO, 0, 0 ); /* BAR0 */
 	if( error ){
-		DBGWRT_ERR((DBH, "*** %s_BrdInit: Can't read BAR0 Id\n", 
+		DBGWRT_ERR((DBH, "*** %s_BrdInit: Can't read BAR0 Id\n",
 					BBNAME ));
 		return( Cleanup(h,error) );
 	}
@@ -333,9 +333,9 @@ static int32 A12_Init(
 	+------------------------------------*/
 	for( i=0; i<A12_NBR_OF_MMODS; i++ ){
 		h->res[i].type = OSS_RES_MEM;
-		h->res[i].u.mem.physAddr = (void *)((u_int32)h->physBase + 
+		h->res[i].u.mem.physAddr = (void *)((u_int32)h->physBase +
 			(A12_MMOD_SLOT_OFFSET*i) + A12_MMOD_CTRL_BASE);
-		h->res[i].u.mem.size = A12_CTRL_SIZE; 
+		h->res[i].u.mem.size = A12_CTRL_SIZE;
 	}
 
     /* assign the resources */
@@ -348,24 +348,24 @@ static int32 A12_Init(
 	|  Map used resources  |
 	+---------------------*/
 	for( i=0; i<A12_NBR_OF_MMODS; i++ ){
-		error = OSS_MapPhysToVirtAddr( 
-				h->osHdl, 
-				(void*)( (u_int32)h->physBase + 
+		error = OSS_MapPhysToVirtAddr(
+				h->osHdl,
+				(void*)( (u_int32)h->physBase +
 						 (A12_MMOD_SLOT_OFFSET*i) + A12_MMOD_CTRL_BASE),
 				A12_CTRL_SIZE,
-				OSS_ADDRSPACE_MEM, 
+				OSS_ADDRSPACE_MEM,
 				OSS_BUSTYPE_PCI,
-				0, 
+				0,
 				(void *)&h->mmod[i].vCtrlBase );
 		if( error ) return Cleanup( h, error );
-		DBGWRT_2((DBH," vCtrlBase for M-mod %d: 0x%08lx\n", i, 
+		DBGWRT_2((DBH," vCtrlBase for M-mod %d: 0x%08lx\n", i,
 				  h->mmod[i].vCtrlBase));
 	}
 
     /* get interrupt line */
 	error = OSS_PciGetConfig( h->osHdl, 0, A12_MMOD_BRIDGE_DEV_NO, 0,
 							   OSS_PCI_INTERRUPT_LINE, &h->irqLevel );
-	
+
 	/* no interrupt connected */
 	if( error || (h->irqLevel == 0xff) )
 		return Cleanup(h,ERR_BBIS_NO_IRQ);
@@ -377,7 +377,7 @@ static int32 A12_Init(
 
 	DBGWRT_2((DBH," IRQ level=0x%x, vector=0x%x\n",
 			  h->irqLevel, h->irqVector));
-	
+
 
     return 0;
 }
@@ -387,7 +387,7 @@ static int32 A12_Init(
  *  Description:  Board initialization.
  *				  - init all control regs to a safe state
  *---------------------------------------------------------------------------
- *  Input......:  h    		pointer to board handle structure    
+ *  Input......:  h    		pointer to board handle structure
  *  Output.....:  return    0 | error code
  *  Globals....:  ---
  ****************************************************************************/
@@ -412,7 +412,7 @@ static int32 A12_BrdInit(
  *                - init all control regs to a safe state
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
+ *  Input......:  h    pointer to board handle structure
  *  Output.....:  return    0 | error code
  *  Globals....:  ---
  ****************************************************************************/
@@ -492,8 +492,8 @@ static int32 A12_Exit(
  *                of the specified device.
  *
  *---------------------------------------------------------------------------
- *  Input......:  code      reference to the information we need    
- *                ...       variable arguments                      
+ *  Input......:  code      reference to the information we need
+ *                ...       variable arguments
  *  Output.....:  *...      variable arguments
  *                return    0 | error code
  *  Globals....:  ---
@@ -508,7 +508,7 @@ static int32 A12_BrdInfo(
     va_start(argptr,code);
 
     switch ( code ) {
-        
+
     /* supported functions */
 	case BBIS_BRDINFO_FUNCTION:
         {
@@ -534,16 +534,16 @@ static int32 A12_BrdInfo(
 	case BBIS_BRDINFO_NUM_SLOTS:
 	{
 		u_int32 *numSlot = va_arg( argptr, u_int32* );
-		
+
 		*numSlot = BRD_NBR_OF_BRDDEV;
 		break;
 	}
-		
+
 	/* bus type */
 	case BBIS_BRDINFO_BUSTYPE:
 	{
 		u_int32 *busType = va_arg( argptr, u_int32* );
-		
+
 		*busType = OSS_BUSTYPE_PCI;
 		break;
 	}
@@ -596,14 +596,14 @@ static int32 A12_BrdInfo(
  *                Code                      Description
  *                ------------------------  ------------------------------
  *                BBIS_CFGINFO_BUSNBR       bus number
- *				  BBIS_CFGINFO_PCI_DEVNBR	PCI device number	
+ *				  BBIS_CFGINFO_PCI_DEVNBR	PCI device number
  *                BBIS_CFGINFO_IRQ          interrupt parameters
  *                BBIS_CFGINFO_EXP          exception interrupt parameters
  *
  *                The BBIS_CFGINFO_BUSNBR code returns the number of the
  *                bus on which the specified device resides
  *
- *                The BBIS_CFGINFO_PCI_DEVNBR code returns the device number 
+ *                The BBIS_CFGINFO_PCI_DEVNBR code returns the device number
  *                on the PCI bus on which the specified device resides
  *
  *                The BBIS_CFGINFO_IRQ code returns the device interrupt
@@ -613,9 +613,9 @@ static int32 A12_BrdInfo(
  *                vector, level and mode of the specified device.
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure       
- *                code      reference to the information we need    
- *                ...       variable arguments                      
+ *  Input......:  h    pointer to board handle structure
+ *                code      reference to the information we need
+ *                ...       variable arguments
  *  Output.....:  ...       variable arguments
  *                return    0 | error code
  *  Globals....:  ---
@@ -645,7 +645,7 @@ static int32 A12_CfgInfo(
 			*busNbr = G_slotCfg[CFIDX(mSlot)].pciBusNbr;
 		else
 			*busNbr = 0;		/* M-module bridge on bus 0 */
-		
+
 		break;
 	}
 
@@ -654,7 +654,7 @@ static int32 A12_CfgInfo(
 	{
 		u_int32 mSlot      = va_arg( argptr, u_int32 );
 		u_int32 *pciDevNbr = va_arg( argptr, u_int32* );
-		
+
 		if ( G_slotCfg[CFIDX(mSlot)].pciDevNbr >= 0 )
 			*pciDevNbr = G_slotCfg[CFIDX(mSlot)].pciDevNbr;
 		else
@@ -696,7 +696,7 @@ static int32 A12_CfgInfo(
 		}
 		DBGWRT_2((DBH, " dev:%d : IRQ mode=0x%x, level=0x%x, vector=0x%x\n",
 				mSlot, *mode, *level, *vector));
-			
+
 		if (status) {
 			va_end( argptr );
 			return status;
@@ -713,7 +713,7 @@ static int32 A12_CfgInfo(
 		u_int32 *mode   = va_arg( argptr, u_int32* );
 		u_int32 *dummy;
 		u_int32 dummy2;
-		
+
 		dummy = vector;
 		dummy = level;
 		dummy2 = mSlot;
@@ -742,9 +742,9 @@ static int32 A12_CfgInfo(
  *                For QSPI, nothing is done. QSPI has seperate IRQ9
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
- *                enable    interrupt setting                   
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
+ *                enable    interrupt setting
  *  Output.....:  return    0
  *  Globals....:  ---
  ****************************************************************************/
@@ -773,8 +773,8 @@ static int32 A12_IrqEnable(
  *                checks if the slot caused the interrupt
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
  *  Output.....:  return    BBIS_IRQ_NO
  *  Globals....:  ---
  ****************************************************************************/
@@ -783,8 +783,8 @@ static int32 A12_IrqSrvInit(
     u_int32         mSlot)
 {
 	IDBGWRT_1((DBH, "BB - %s_IrqSrvInit: mSlot=%d\n",BBNAME,mSlot));
-	
-	if( (mSlot==0x1000) || 
+
+	if( (mSlot==0x1000) ||
 		(MREAD_D8( h->mmod[CFIDX(mSlot)].vCtrlBase, 0 ) & 0x1 ))
 		return BBIS_IRQ_YES;
 	else
@@ -798,8 +798,8 @@ static int32 A12_IrqSrvInit(
  *                Do nothing
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
  *  Output.....:  ---
  *  Globals....:  ---
  ****************************************************************************/
@@ -817,9 +817,9 @@ static void A12_IrqSrvExit(
  *                Do nothing
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
- *                enable    interrupt setting                   
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
+ *                enable    interrupt setting
  *  Output.....:  return    0
  *  Globals....:  ---
  ****************************************************************************/
@@ -840,8 +840,8 @@ static int32 A12_ExpEnable(
  *                Do nothing
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
  *  Output.....:  return    BBIS_IRQ_NO
  *  Globals....:  ---
  ****************************************************************************/
@@ -861,10 +861,10 @@ static int32 A12_ExpSrv(
  *                Do nothing
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
- *                addrMode  MDIS_MODE_A08 | MDIS_MODE_A24       
- *                dataMode  MDIS_MODE_D16 | MDIS_MODE_D32       
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
+ *                addrMode  MDIS_MODE_A08 | MDIS_MODE_A24
+ *                dataMode  MDIS_MODE_D16 | MDIS_MODE_D32
  *  Output.....:  return    0
  *  Globals....:  ---
  ****************************************************************************/
@@ -886,8 +886,8 @@ static int32 A12_SetMIface(
  *                Do nothing
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
  *  Output.....:  return    0
  *  Globals....:  ---
  ****************************************************************************/
@@ -908,12 +908,12 @@ static int32 A12_ClrMIface(
  *                - assign address spaces
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure   
- *                mSlot     module slot number                  
- *                addrMode  MDIS_MA08 | MDIS_MA24    
- *                dataMode  MDIS_MD16 | MDIS_MD32      
- *                mAddr     pointer to address space            
- *                mSize     size of address space               
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
+ *                addrMode  MDIS_MA08 | MDIS_MA24
+ *                dataMode  MDIS_MD16 | MDIS_MD32
+ *                mAddr     pointer to address space
+ *                mSize     size of address space
  *  Output.....:  return    0 | error code
  *  Globals....:  ---
  ****************************************************************************/
@@ -948,11 +948,11 @@ static int32 A12_GetMAddr(
 			switch(dataMode){
 			case MDIS_MD16:
 			case MDIS_MD08:
-				base += A12_MMOD_A08_D16_BASE; 
+				base += A12_MMOD_A08_D16_BASE;
 				size = 0x100;
 				break;
 			case MDIS_MD32:
-				base += A12_MMOD_A08_D32_BASE; 
+				base += A12_MMOD_A08_D32_BASE;
 				size = 0x100;
 				break;
 			default:
@@ -965,11 +965,11 @@ static int32 A12_GetMAddr(
 			switch(dataMode){
 			case MDIS_MD16:
 			case MDIS_MD08:
-				base += A12_MMOD_A24_D16_BASE; 
+				base += A12_MMOD_A24_D16_BASE;
 				size = 0x1000000 - 0x300;
 				break;
 			case MDIS_MD32:
-				base += A12_MMOD_A24_D32_BASE; 
+				base += A12_MMOD_A24_D32_BASE;
 				size = 0x1000000;
 				break;
 			default:
@@ -1012,10 +1012,10 @@ static int32 A12_GetMAddr(
  *                M_BB_DEBUG_LEVEL     board debug level          see dbg.h
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure           
- *                mSlot     module slot number                          
- *                code      setstat code                                
- *                value     setstat value or ptr to blocksetstat data   
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
+ *                code      setstat code
+ *                value     setstat value or ptr to blocksetstat data
  *  Output.....:  return    0 | error code
  *  Globals....:  ---
  ****************************************************************************/
@@ -1057,9 +1057,9 @@ static int32 A12_SetStat(
  *                M_MK_BLK_REV_ID      ident function table ptr   -
  *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure           
- *                mSlot     module slot number                          
- *                code      getstat code                                
+ *  Input......:  h    pointer to board handle structure
+ *                mSlot     module slot number
+ *                code      getstat code
  *  Output.....:  valueP    getstat value or ptr to blockgetstat data
  *                return    0 | error code
  *  Globals....:  ---
@@ -1085,7 +1085,7 @@ static int32 A12_GetStat(
 		{
 			u_int32 vector, level, mode;
 
-			status = A12_CfgInfo( h, BBIS_CFGINFO_IRQ, mSlot, 
+			status = A12_CfgInfo( h, BBIS_CFGINFO_IRQ, mSlot,
 								  &vector, &level, &mode );
 
 			*valueP = (int32)vector;
@@ -1096,7 +1096,7 @@ static int32 A12_GetStat(
 		{
 			u_int32 vector, level, mode;
 
-			status = A12_CfgInfo( h, BBIS_CFGINFO_IRQ, mSlot, 
+			status = A12_CfgInfo( h, BBIS_CFGINFO_IRQ, mSlot,
 								  &vector, &level, &mode );
 
 			*valueP = (int32)level;
@@ -1137,7 +1137,7 @@ static int32 A12_Unused( void )		/* nodoc */
 
 /*********************************** Ident **********************************
  *
- *  Description:  Return ident string 
+ *  Description:  Return ident string
  *
  *---------------------------------------------------------------------------
  *  Input......:  -
@@ -1146,7 +1146,7 @@ static int32 A12_Unused( void )		/* nodoc */
  ****************************************************************************/
 static char* Ident( void )		/* nodoc */
 {
-	return ( 
+	return (
 		"A12 - A12"
 		"  Base Board Handler: $Id: bb_a12.c,v 1.6 2006/12/20 12:23:57 ufranke Exp $" );
 }
@@ -1157,9 +1157,9 @@ static char* Ident( void )		/* nodoc */
  *
  *		          NOTE: The h handle is invalid after calling this
  *                      function.
- *			   
+ *
  *---------------------------------------------------------------------------
- *  Input......:  h    pointer to board handle structure           
+ *  Input......:  h    pointer to board handle structure
  *                retCode	return value
  *  Output.....:  return	retCode
  *  Globals....:  -
@@ -1185,7 +1185,7 @@ static int32 Cleanup(
 							   A12_CTRL_SIZE, OSS_ADDRSPACE_MEM );
 	}
 
-#ifdef OSS_HAS_UNASSIGN_RESOURCES	
+#ifdef OSS_HAS_UNASSIGN_RESOURCES
 	if( h->resourcesAssigned )
 		OSS_UnAssignResources( h->osHdl, OSS_BUSTYPE_PCI, 0,
 							   A12_NBR_OF_MMODS, h->res );
@@ -1198,6 +1198,7 @@ static int32 Cleanup(
     +------------------------------*/
     /* release memory for the board handle */
     OSS_MemFree( h->osHdl, (int8*)h, h->ownMemSize);
+    h = NULL;
 
     /*------------------------------+
     |  return error code            |

@@ -148,8 +148,8 @@ static int32 A12_SetMIface(BBIS_HANDLE*, u_int32, u_int32, u_int32);
 static int32 A12_ClrMIface(BBIS_HANDLE*,u_int32);
 static int32 A12_GetMAddr(BBIS_HANDLE*, u_int32, u_int32, u_int32, void**, u_int32*);
 /* getstat/setstat */
-static int32 A12_SetStat(BBIS_HANDLE*, u_int32, int32, int32);
-static int32 A12_GetStat(BBIS_HANDLE*, u_int32, int32, int32*);
+static int32 A12_SetStat(BBIS_HANDLE*, u_int32, int32, INT32_OR_64);
+static int32 A12_GetStat(BBIS_HANDLE*, u_int32, int32, INT32_OR_64*);
 /* unused */
 static int32 A12_Unused(void);
 /* miscellaneous */
@@ -284,14 +284,14 @@ static int32 A12_Init(
     +------------------------------*/
     /* init descHdl */
     error = DESC_Init( descSpec, osHdl, &h->descHdl );
-    if (error)
+	if (error)
 		return( Cleanup(h,error) );
 
     /* get DEBUG_LEVEL_DESC */
     error = DESC_GetUInt32(h->descHdl, OSS_DBG_DEFAULT, &value,
 				"DEBUG_LEVEL_DESC");
-    if ( error && (error!=ERR_DESC_KEY_NOTFOUND) )
-        return( Cleanup(h,error) );
+	if ( error && (error!=ERR_DESC_KEY_NOTFOUND) )
+		return( Cleanup(h,error) );
 
 	/* set debug level for DESC module */
 	DESC_DbgLevelSet(h->descHdl, value);
@@ -300,8 +300,8 @@ static int32 A12_Init(
     error = DESC_GetUInt32( h->descHdl, OSS_DBG_DEFAULT,
 							 &(h->debugLevel),
                 "DEBUG_LEVEL");
-    if ( error && (error!=ERR_DESC_KEY_NOTFOUND) )
-        return( Cleanup(h,error) );
+	if ( error && (error!=ERR_DESC_KEY_NOTFOUND) )
+		return( Cleanup(h,error) );
 
 
 	/*-----------------------------------+
@@ -347,7 +347,7 @@ static int32 A12_Init(
 	+------------------------------------*/
 	for( i=0; i<A12_NBR_OF_MMODS; i++ ){
 		h->res[i].type = OSS_RES_MEM;
-		h->res[i].u.mem.physAddr = (void *)((u_int32)h->physBase +
+		h->res[i].u.mem.physAddr = (void *)((INT32_OR_64)h->physBase +
 			(A12_MMOD_SLOT_OFFSET*i) + A12_MMOD_CTRL_BASE);
 		h->res[i].u.mem.size = A12_CTRL_SIZE;
 	}
@@ -364,7 +364,7 @@ static int32 A12_Init(
 	for( i=0; i<A12_NBR_OF_MMODS; i++ ){
 		error = OSS_MapPhysToVirtAddr(
 				h->osHdl,
-				(void*)( (u_int32)h->physBase +
+				(void*)( (INT32_OR_64)h->physBase +
 						 (A12_MMOD_SLOT_OFFSET*i) + A12_MMOD_CTRL_BASE),
 				A12_CTRL_SIZE,
 				OSS_ADDRSPACE_MEM,
@@ -940,7 +940,8 @@ static int32 A12_GetMAddr(
     u_int32         *mSize )
 {
 	int32 cfgIdx;
-	u_int32 base, size=0;
+	u_int32 size=0;
+	INT32_OR_64 base;
 
 	DBGWRT_1((DBH, "BB - %s_GetMAddr: mSlot=%d\n",BBNAME,mSlot));
 
@@ -952,7 +953,7 @@ static int32 A12_GetMAddr(
 		return ERR_BBIS_ILL_SLOT;
 	}
 
-	base = (u_int32)h->physBase + (cfgIdx * A12_MMOD_SLOT_OFFSET);
+	base = (INT32_OR_64)h->physBase + (cfgIdx * A12_MMOD_SLOT_OFFSET);
 
 	if( cfgIdx < A12_NBR_OF_MMODS ){
 		/* M-module slots */
@@ -1037,7 +1038,7 @@ static int32 A12_SetStat(
     BBIS_HANDLE     *h,
     u_int32         mSlot,
     int32           code,
-    int32           value )
+	INT32_OR_64     value )
 {
     DBGWRT_1((DBH, "BB - %s_SetStat: mSlot=%d code=0x%04x value=0x%x\n",
 			  BBNAME, mSlot, code, value));
@@ -1082,7 +1083,7 @@ static int32 A12_GetStat(
     BBIS_HANDLE     *h,
     u_int32         mSlot,
     int32           code,
-    int32           *valueP )
+	INT32_OR_64     *valueP )
 {
     int32       status=0;
 
@@ -1124,7 +1125,7 @@ static int32 A12_GetStat(
 
         /* ident table */
         case M_MK_BLK_REV_ID:
-           *valueP = (int32)&h->idFuncTbl;
+           *valueP = (INT32_OR_64)&h->idFuncTbl;
            break;
 
         /* unknown */

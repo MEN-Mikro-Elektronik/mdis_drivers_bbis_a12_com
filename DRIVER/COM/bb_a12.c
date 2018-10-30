@@ -26,30 +26,6 @@
  *     Required: ---
  *     Switches: _ONE_NAMESPACE_PER_DRIVER_
  *
- *-------------------------------[ History ]---------------------------------
- *
- * $Log: bb_a12.c,v $
- * Revision 1.6  2006/12/20 12:23:57  ufranke
- * fixed
- *  - function pointer setIrqHandle should be NULL if not implemented
- *    or must be implemented completely
- *
- * Revision 1.5  2006/12/15 15:44:06  ts
- * replaced fkt13 with setIrqHandle
- *
- * Revision 1.4  2005/06/21 13:34:58  UFranke
- * cosmetics
- *
- * Revision 1.3  2001/08/16 10:08:02  kp
- * Bug fix in resource assignment
- *
- * Revision 1.2  2001/06/12 10:30:29  kp
- * Bug fix: identCall Table incorrectly terminated
- * Bug fix: missing argument to DBGWRT
- *
- * Revision 1.1  2001/04/11 11:05:46  kp
- * Initial Revision
- *
  *---------------------------------------------------------------------------
  * (c) Copyright 2001 by MEN mikro elektronik GmbH, Nuremberg, Germany
  ******************************************************************************/

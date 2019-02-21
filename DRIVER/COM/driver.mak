@@ -6,14 +6,8 @@
 #  
 #    Description: Makefile definitions for the A12 BBIS driver
 #                      
-#---------------------------------[ History ]---------------------------------
-#
-#   $Log: driver.mak,v $
-#   Revision 1.1  2001/04/11 11:05:49  kp
-#   Initial Revision
-#
 #-----------------------------------------------------------------------------
-#   (c) Copyright 2001 by MEN mikro elektronik GmbH, Nuernberg, Germany 
+#   Copyright (c) 2001-2019, MEN Mikro Elektronik GmbH
 #*****************************************************************************
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,8 +1,6 @@
 #***************************  M a k e f i l e  *******************************
 #  
 #         Author: kp
-#          $Date: 2001/04/11 11:05:49 $
-#      $Revision: 1.1 $
 #  
 #    Description: Makefile definitions for the A12 BBIS driver
 #                      
@@ -24,12 +22,17 @@
 
 
 MAK_NAME=a12
+# the next line is updated during the MDIS installation
+STAMPED_REVISION="mdis_drivers_bbis_a12_com_01_44-0-gba51d18-dirty_2019-02-21"
+
+DEF_REVISION=MAK_REVISION=$(STAMPED_REVISION)
 
 MAK_LIBS=$(LIB_PREFIX)$(MEN_LIB_DIR)/desc$(LIB_SUFFIX)	\
          $(LIB_PREFIX)$(MEN_LIB_DIR)/oss$(LIB_SUFFIX)	\
 	 	 $(LIB_PREFIX)$(MEN_LIB_DIR)/dbg$(LIB_SUFFIX)
 
-MAK_SWITCH=$(SW_PREFIX)MAC_MEM_MAPPED	 	 
+MAK_SWITCH=$(SW_PREFIX)MAC_MEM_MAPPED	 	  \
+		$(SW_PREFIX)$(DEF_REVISION)
 
 MAK_INCL=$(MEN_INC_DIR)/bb_a12.h	\
 		 $(MEN_INC_DIR)/bb_defs.h	\
